@@ -35,4 +35,6 @@ RUN apt-get autoclean && rm -r /var/lib/apt/lists/*
 ARG UID
 ARG GID
 ARG UNAME
-RUN usermod -u ${UID} www-data
+RUN useradd -r ${UNAME}
+RUN usermod -u ${UID} ${UNAME}
+USER ${UNAME}
