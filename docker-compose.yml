@@ -1,0 +1,47 @@
+services:
+  php:
+    image: php8.4
+    build:
+      context: './docker/php'
+      args:
+        UID: ${UID}
+        GID: ${GID}
+        UNAME: ${UNAME}
+    container_name: php
+    restart: always
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    working_dir: '/var/www/books/www'
+    volumes:
+      - '${PROJECT_DIR}:/var/www/books'
+    entrypoint: ["/start.sh"]
+  mysql:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_DATABASE: books
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - '127.0.0.1:3306:3306'
+    volumes:
+      - '${VOLUME_MYSQL_DATA_PATH}:/var/lib/mysql'
+  nginx:
+    image: nginx
+    container_name: nginx
+    build:
+      context: './docker/nginx'
+      dockerfile: Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+        UNAME: ${UNAME}
+    restart: always
+    ports:
+      - '127.0.0.1:80:80'
+    volumes:
+      - '${PROJECT_DIR}:/var/www/books'
+      - './docker/nginx/sites-enabled/nginx.conf:/etc/nginx/conf.d/nginx.conf'
+      - './docker/nginx/snippets:/etc/nginx/snippets'
+      - './docker/nginx/fastcgi.conf:/etc/nginx/fastcgi.conf'
+      - './docker/nginx/sites-enabled/books.conf:/etc/nginx/conf.d/books.conf'
