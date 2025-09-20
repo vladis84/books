@@ -13,7 +13,7 @@ class m250919_150404_add_table_book extends Migration
                 'id' => $this->primaryKey(),
                 'name' => $this->string()->notNull(),
                 'description' => $this->string(),
-                'isbn' => $this->string()->notNull(),
+                'isbn' => $this->string()->notNull()->unique(),
             ]
         );
     }

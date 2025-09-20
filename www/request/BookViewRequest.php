@@ -9,5 +9,18 @@ namespace app\request;
  */
 class BookViewRequest extends BaseRequest
 {
+    public function rules(): array
+    {
+        return [
+            ['id', 'integer'],
+            ['id', 'required'],
+        ];
+    }
 
+    protected function prepareAttributes(array $attributes): array
+    {
+        return [
+            'id' => $attributes['id'] ?? null,
+        ];
+    }
 }

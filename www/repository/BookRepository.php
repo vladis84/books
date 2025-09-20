@@ -26,9 +26,9 @@ class BookRepository
         ]);
     }
 
-    public function findOne(int $id): ?Book
+    public function findOne(array $condition): ?Book
     {
-        return Book::findOne($id);
+        return Book::findOne($condition);
     }
 
     public function save(Book $book): bool

@@ -16,7 +16,16 @@ class BookCreateRequest extends BaseRequest
         return [
             [['description'], 'default', 'value' => null],
             [['name', 'isbn'], 'required'],
-            [['name', 'description', 'isbn'], 'string', 'max' => 10],
+            [['name', 'description', 'isbn'], 'string', 'max' => 255],
+        ];
+    }
+
+    protected function prepareAttributes(array $attributes): array
+    {
+        return [
+            'name' => $attributes['name'] ?? null,
+            'description' => $attributes['description'] ?? null,
+            'isbn' => $attributes['isbn'] ?? null,
         ];
     }
 }

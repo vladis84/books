@@ -5,15 +5,16 @@ namespace app\controllers;
 use app\models\Book;
 use app\request\BookCreateRequest;
 use app\request\BookIndexRequest;
+use app\request\BookUpdateRequest;
+use app\request\BookViewRequest;
 use app\useCase\BookCreateUseCase;
 use app\useCase\BookIndexUseCase;
+use app\useCase\BookUpdateUseCase;
 use app\useCase\BookViewUseCase;
-use app\useCase\UseCaseInterface;
-use Yii;
-use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class BookController extends Controller
 {
@@ -60,50 +61,65 @@ class BookController extends Controller
         $request = \Yii::$container->get(BookIndexRequest::class, ['attributes' => ['id' => $id]]);
         $useCase = \Yii::$container->get(BookViewUseCase::class);
         $model = $useCase->execute($request);
+
         return $this->render('view', [
-            'model' => $model
+            'model' => $model,
         ]);
     }
 
     /**
      * Creates a new Book model.
      * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
+     * @return string|Response
      */
-    public function actionCreate(): string|\yii\web\Response
+    public function actionCreate(): string|Response
     {
-        if ($this->request->isPost) {
-            $request = \Yii::$container->get(
-                BookCreateRequest::class,
-                ['attributes' => \Yii::$app->request->post('Book')]
-            );
+        $request = \Yii::$container->get(
+            BookCreateRequest::class,
+            ['attributes' => \Yii::$app->request->post('BookCreateRequest')]
+        );
+
+        if ($this->request->isPost && $request->validate()) {
             $useCase = \Yii::$container->get(BookCreateUseCase::class);
             $book = $useCase->execute($request);
+
             return $this->redirect(['view', 'id' => $book->id]);
         }
 
-        return $this->render('create', [
-            'book' => new Book(),
-        ]);
+        return $this->render('create', ['request' => $request]);
     }
 
     /**
      * Updates an existing Book model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param int $id ID
-     * @return string|\yii\web\Response
+     * @return string|Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
+    public function actionUpdate(int $id): string|Response
     {
-        $model = $this->findModel($id);
+        $updateRequest = \Yii::$container->get(
+            BookUpdateRequest::class,
+            [
+                'attributes' => \Yii::$app->request->post('BookUpdateRequest') ?? [],
+            ]
+        );
+        $updateRequest->id = $id;
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->request->isPost && $updateRequest->validate()) {
+            $updateUseCase = \Yii::$container->get(BookUpdateUseCase::class);
+            $bookId = $updateUseCase->execute($updateRequest);
+
+            return $this->redirect(['view', 'id' => $bookId]);
+        } else {
+            $viewRequest = \Yii::$container->get(BookViewRequest::class, ['attributes' => ['id' => $id]]);
+            $useCase = \Yii::$container->get(BookViewUseCase::class);
+            $book = $useCase->execute($viewRequest);
+            $updateRequest->setAttributes($book->getAttributes());
         }
 
         return $this->render('update', [
-            'model' => $model,
+            'request' => $updateRequest,
         ]);
     }
 
@@ -111,7 +127,7 @@ class BookController extends Controller
      * Deletes an existing Book model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
-     * @return \yii\web\Response
+     * @return Response
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionDelete($id)

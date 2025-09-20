@@ -8,6 +8,7 @@ use app\models\Book;
 use app\repository\BookRepository;
 use app\request\BaseRequest;
 use app\request\BookViewRequest;
+use yii\web\NotFoundHttpException;
 
 readonly class BookViewUseCase implements UseCaseInterface
 {
@@ -21,9 +22,9 @@ readonly class BookViewUseCase implements UseCaseInterface
      */
     public function execute(BaseRequest $request): Book
     {
-        $book = $this->bookRepository->findOne($request->id);
+        $book = $this->bookRepository->findOne(['id' => $request->id]);
         if ($book === null) {
-            throw new \LogicException('Book not found');
+            throw new NotFoundHttpException('Book not found');
         }
 
         return $book;
