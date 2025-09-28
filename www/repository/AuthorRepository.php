@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace app\repository;
 
-use app\models\Book;
+use app\models\Author;
 use yii\data\ActiveDataProvider;
 
-class BookRepository
+class AuthorRepository
 {
     public function findAll(array $conditions, int $pageSize): ActiveDataProvider
     {
         return new ActiveDataProvider([
-            'query' => Book::find()->where($conditions),
+            'query' => Author::find()->where($conditions),
 
             'pagination' => [
                 'pageSize' => $pageSize,
@@ -26,13 +26,13 @@ class BookRepository
         ]);
     }
 
-    public function findOne(array $condition): ?Book
+    public function findOne(array $conditions): ?Author
     {
-        return Book::findOne($condition);
+        return Author::findOne($conditions);
     }
 
-    public function save(Book $book): bool
+    public function save(Author $author): bool
     {
-        return $book->save();
+        return $author->save();
     }
 }

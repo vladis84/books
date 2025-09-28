@@ -8,6 +8,7 @@ namespace app\request;
  * @property string $name
  * @property string $isbn
  * @property string $description
+ * @property int $authorsIds
  */
 class BookCreateRequest extends BaseRequest
 {
@@ -26,6 +27,7 @@ class BookCreateRequest extends BaseRequest
             'name' => $attributes['name'] ?? null,
             'description' => $attributes['description'] ?? null,
             'isbn' => $attributes['isbn'] ?? null,
+            'authorsIds' => $attributes['authorsIds'] ?? [],
         ];
     }
 }

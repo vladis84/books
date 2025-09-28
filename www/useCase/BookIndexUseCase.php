@@ -16,6 +16,6 @@ readonly class BookIndexUseCase implements UseCaseInterface
 
     public function execute(BaseRequest $request): ActiveDataProvider
     {
-        return $this->bookRepository->findAll(50);
+        return $this->bookRepository->findAll($request->getAttributes(), 50);
     }
 }

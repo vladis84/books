@@ -2,7 +2,7 @@
 
 namespace app\models;
 
-use Yii;
+use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "book".
@@ -13,7 +13,6 @@ use Yii;
  * @property string $isbn
  *
  * @property Author[] $authors
- * @property BookAuthor[] $bookAuthors
  */
 class Book extends \yii\db\ActiveRecord
 {
@@ -57,18 +56,9 @@ class Book extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getAuthors()
+    public function getAuthors(): ActiveQuery
     {
-        return $this->hasMany(Author::class, ['id' => 'author_id'])->viaTable('book_author', ['book_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[BookAuthors]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getBookAuthors()
-    {
-        return $this->hasMany(BookAuthor::class, ['book_id' => 'id']);
+        return $this->hasMany(Author::class, ['id' => 'author_id'])
+            ->viaTable('book_author', ['book_id' => 'id']);
     }
 }

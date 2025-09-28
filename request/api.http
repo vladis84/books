@@ -1,0 +1,36 @@
+### Авторизация
+POST http://books.local/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+### Список книг
+GET http://books.local/books
+
+### Просмотр книги
+GET http://books.local/books/6
+
+### Добавление книги
+POST http://books.local/books
+X-Api-Key: {{authCode}}
+Content-Type: application/json
+
+{
+  "name": "Книга",
+  "isbn": "Код"
+}
+
+### Список авторов
+GET http://books.local/authors
+
+### Добавление автора
+POST http://books.local/authors
+X-Api-Key: {{authCode}}
+Content-Type: application/json
+
+{
+  "name": "Иванов Иван"
+}

@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\components\Controller;
 use app\models\Book;
 use app\request\BookCreateRequest;
 use app\request\BookIndexRequest;
@@ -11,8 +12,7 @@ use app\useCase\BookCreateUseCase;
 use app\useCase\BookIndexUseCase;
 use app\useCase\BookUpdateUseCase;
 use app\useCase\BookViewUseCase;
-use yii\filters\AccessControl;
-use yii\web\Controller;
+use yii\filters\auth\HttpHeaderAuth;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -21,20 +21,9 @@ class BookController extends Controller
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        $behaviors['access'] = [
-            'class' => AccessControl::class,
-            'rules' => [
-                [
-                    'allow' => true,
-                    'actions' => ['create', 'update', 'delete'],
-                    'roles' => ['@'],
-                ],
-                [
-                    'allow' => true,
-                    'actions' => ['index', 'view'],
-                    'roles' => ['?', '@'],
-                ],
-            ],
+        $behaviors['authenticator'] = [
+            'class' => HttpHeaderAuth::class,
+            'except' => ['index', 'view'],
         ];
 
         return $behaviors;
@@ -43,50 +32,52 @@ class BookController extends Controller
     /**
      * Lists all Book models.
      */
-    public function actionIndex(): string
+    public function actionIndex(): array
     {
         $request = \Yii::$container->get(BookIndexRequest::class, ['attributes' => \Yii::$app->request->get()]);
         $useCase = \Yii::$container->get(BookIndexUseCase::class);
+        $dataProvider = $useCase->execute($request);
+        $pagination = $dataProvider->getPagination();
 
-        return $this->render('index', [
-            'dataProvider' => $useCase->execute($request),
-        ]);
+        return [
+            'data' => $dataProvider->getModels(),
+            'pagination' => [
+                'totalCount' => $pagination->totalCount,
+                'page' => $pagination->getPage() + 1,
+                'pageSize' => $pagination->getPageSize(),
+                'pageCount' => $pagination->getPageCount(),
+            ],
+        ];
     }
 
     /**
      * Displays a single Book model.
      */
-    public function actionView(int $id): string
+    public function actionView(int $id): array
     {
         $request = \Yii::$container->get(BookIndexRequest::class, ['attributes' => ['id' => $id]]);
         $useCase = \Yii::$container->get(BookViewUseCase::class);
-        $model = $useCase->execute($request);
+        $book = $useCase->execute($request);
 
-        return $this->render('view', [
-            'model' => $model,
-        ]);
+        return [
+            'data' => $book,
+        ];
     }
 
-    /**
-     * Creates a new Book model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|Response
-     */
-    public function actionCreate(): string|Response
+    public function actionCreate(): array
     {
         $request = \Yii::$container->get(
             BookCreateRequest::class,
-            ['attributes' => \Yii::$app->request->post('BookCreateRequest')]
+            ['attributes' => \Yii::$app->request->post()]
         );
 
-        if ($this->request->isPost && $request->validate()) {
-            $useCase = \Yii::$container->get(BookCreateUseCase::class);
-            $book = $useCase->execute($request);
+        $request->validate();
+        $useCase = \Yii::$container->get(BookCreateUseCase::class);
+        $book = $useCase->execute($request);
 
-            return $this->redirect(['view', 'id' => $book->id]);
-        }
-
-        return $this->render('create', ['request' => $request]);
+        return [
+            'data' => $book,
+        ];
     }
 
     /**
@@ -98,29 +89,27 @@ class BookController extends Controller
      */
     public function actionUpdate(int $id): string|Response
     {
-        $updateRequest = \Yii::$container->get(
+        $request = \Yii::$container->get(
             BookUpdateRequest::class,
             [
                 'attributes' => \Yii::$app->request->post('BookUpdateRequest') ?? [],
             ]
         );
-        $updateRequest->id = $id;
+        $request->id = $id;
 
-        if ($this->request->isPost && $updateRequest->validate()) {
+        if ($this->request->isPost && $request->validate()) {
             $updateUseCase = \Yii::$container->get(BookUpdateUseCase::class);
-            $bookId = $updateUseCase->execute($updateRequest);
+            $bookId = $updateUseCase->execute($request);
 
             return $this->redirect(['view', 'id' => $bookId]);
         } else {
             $viewRequest = \Yii::$container->get(BookViewRequest::class, ['attributes' => ['id' => $id]]);
             $useCase = \Yii::$container->get(BookViewUseCase::class);
             $book = $useCase->execute($viewRequest);
-            $updateRequest->setAttributes($book->getAttributes());
+            $request->setAttributes($book->getAttributes());
         }
 
-        return $this->render('update', [
-            'request' => $updateRequest,
-        ]);
+        return $this->render('update', ['request' => $request]);
     }
 
     /**

@@ -24,12 +24,17 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
         return new static($identity->getAttributes());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public static function findIdentityByAccessToken($token, $type = null): ?static
     {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+        $userToken = UserToken::findOne(['token' => $token]);
+
+        if (!$userToken?->isActive()) {
+            return null;
+        }
+
+        $identity = Identity::findOne($userToken->user_id);
+
+        return new static($identity->getAttributes());
     }
 
     /**
@@ -40,6 +45,9 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     public static function findByUsername($username): ?static
     {
         $identity = Identity::findOne(['username' => $username]);
+        if ($identity === null) {
+            return null;
+        }
 
         return new static($identity->getAttributes());
     }

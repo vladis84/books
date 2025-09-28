@@ -21,9 +21,9 @@ readonly class BookCreateUseCase implements UseCaseInterface
      */
     public function execute(BaseRequest $request): Book
     {
-        $prevBook = $this->bookRepository->findOne(['ibsn' => $request->isbn]);
-        if ($prevBook === null) {
-            throw new \LogicException("Книга с ibsn '{$request->isbn}' уже существует");
+        $prevBook = $this->bookRepository->findOne(['isbn' => $request->isbn]);
+        if ($prevBook !== null) {
+            throw new \LogicException("Книга с isbn '{$request->isbn}' уже существует");
         }
 
         $book = new Book(['attributes' => $request->getAttributes()]);
