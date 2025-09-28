@@ -12,7 +12,7 @@ class AuthorRepository
     public function findAll(array $conditions, int $pageSize): ActiveDataProvider
     {
         return new ActiveDataProvider([
-            'query' => Author::find()->where($conditions),
+            'query' => Author::find()->joinWith(['books'])->where($conditions),
 
             'pagination' => [
                 'pageSize' => $pageSize,
@@ -24,6 +24,14 @@ class AuthorRepository
             ],
 
         ]);
+    }
+
+    /**
+     * @return Author[]
+     */
+    public function findMany(array $conditions): array
+    {
+        return Author::findAll($conditions);
     }
 
     public function findOne(array $conditions): ?Author

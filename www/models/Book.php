@@ -16,39 +16,17 @@ use yii\db\ActiveQuery;
  */
 class Book extends \yii\db\ActiveRecord
 {
-
+    public function extraFields(): array
+    {
+        return ['authors'];
+    }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'book';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function rules(): array
-    {
-        return [
-            [['description'], 'default', 'value' => null],
-            [['name', 'isbn'], 'required'],
-            [['name', 'description', 'isbn'], 'string', 'max' => 255],
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels(): array
-    {
-        return [
-            'id' => 'ID',
-            'name' => 'Name',
-            'description' => 'Description',
-            'isbn' => 'Isbn',
-        ];
     }
 
     /**

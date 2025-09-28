@@ -20,7 +20,19 @@ Content-Type: application/json
 
 {
   "name": "Книга",
-  "isbn": "Код"
+  "isbn": "Код2",
+  "authorsIds": [1]
+}
+
+### Обновление книги
+PUT http://books.local/books/11
+X-Api-Key: {{authCode}}
+Content-Type: application/json
+
+{
+  "name": "Книга",
+  "isbn": "Код2",
+  "authorsIds": [1]
 }
 
 ### Список авторов
@@ -33,4 +45,13 @@ Content-Type: application/json
 
 {
   "name": "Иванов Иван"
+}
+
+### Обновление автора
+PUT http://books.local/authors/1
+X-Api-Key: {{authCode}}
+Content-Type: application/json
+
+{
+  "name": "Иванов Иван57"
 }

@@ -7,8 +7,10 @@ namespace app\controllers;
 use app\components\Controller;
 use app\request\AuthorCreateRequest;
 use app\request\AuthorIndexRequest;
+use app\request\AuthorUpdateRequest;
 use app\useCase\AuthorCreateUseCase;
 use app\useCase\AuthorIndexUseCase;
+use app\useCase\AuthorUpdateUseCase;
 use yii\filters\auth\HttpHeaderAuth;
 
 class AuthorController extends Controller
@@ -34,17 +36,8 @@ class AuthorController extends Controller
 
         $useCase = \Yii::$container->get(AuthorIndexUseCase::class);
         $dataProvider = $useCase->execute($request);
-        $pagination = $dataProvider->getPagination();
 
-        return [
-            'data' => $dataProvider->getModels(),
-            'pagination' => [
-                'totalCount' => $pagination->totalCount,
-                'page' => $pagination->getPage() + 1,
-                'pageSize' => $pagination->getPageSize(),
-                'pageCount' => $pagination->getPageCount(),
-            ],
-        ];
+        return $this->formatDataProvider($dataProvider, ['books']);
     }
 
     public function actionCreate(): array
@@ -55,6 +48,22 @@ class AuthorController extends Controller
         );
         $request->validate();
         $useCase = \Yii::$container->get(AuthorCreateUseCase::class);
+        $author = $useCase->execute($request);
+
+        return [
+            'data' => $author,
+        ];
+    }
+
+    public function actionUpdate(int $id): array
+    {
+        $request = \Yii::$container->get(
+            AuthorUpdateRequest::class,
+            ['attributes' => \Yii::$app->request->post()]
+        );
+        $request->id = $id;
+        $request->validate();
+        $useCase = \Yii::$container->get(AuthorUpdateUseCase::class);
         $author = $useCase->execute($request);
 
         return [
